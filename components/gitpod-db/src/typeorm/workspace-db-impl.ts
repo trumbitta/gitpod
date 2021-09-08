@@ -777,6 +777,9 @@ export abstract class AbstractTypeORMWorkspaceDBImpl implements WorkspaceDB {
             .take(limit)
             .skip(offset);
 
+            console.log("print dat sql > ", qb.getSql());
+            console.log("get dat sql > ", qb.getQuery());
+
         const rawResult = (await qb.getMany()) as InstanceJoinResult[];
         const total = await qb.getCount();
         const rows = (rawResult as InstanceJoinResult[]).map(r => {
