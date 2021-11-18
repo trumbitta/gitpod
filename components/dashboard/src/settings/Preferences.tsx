@@ -6,16 +6,12 @@
 
 import { useContext, useState } from "react";
 import CheckBox from "../components/CheckBox";
-import CodeText from "../components/CodeText";
 import InfoBox from "../components/InfoBox";
 import { PageWithSubMenu } from "../components/PageWithSubMenu";
 import PillLabel from "../components/PillLabel";
 import SelectableCard from "../components/SelectableCard";
 import Tooltip from "../components/Tooltip";
-import golandLogo from '../images/golandLogo.svg';
-import ideaLogo from '../images/intellijIdeaLogo.svg';
-import vscode from '../images/vscode.svg';
-import vscodeInsiders from '../images/vscodeInsiders.svg';
+import ideLogos from '../images/ideLogos';
 import { getGitpodService } from "../service/service";
 import { ThemeContext } from "../theme-context";
 import { UserContext } from "../user-context";
@@ -23,11 +19,88 @@ import settingsMenu from "./settings-menu";
 
 type Theme = 'light' | 'dark' | 'system';
 
+interface IdePreferences {
+    sectionTitle: string;
+    sectionSubtitle: string;
+
+    desktopIdeTitle: string;
+    desktopIdeSubtitle: string;
+    desktopIdeLabel?: string;
+    desktopIdeInfobox?: string;
+    desktopIdeFootnote?: string;
+
+    defaultIde: string;
+    defaultDesktopIde: string;
+
+    options: { [key: string]: IdeOption };
+}
+
+interface IdeOption {
+    title: string;
+    type: 'browser' | 'desktop';
+    logo: string;
+    tooltip?: string;
+    label?: string;
+}
+
+const idePreferences: IdePreferences = {
+    sectionTitle: "Default IDE",
+    sectionSubtitle: "Choose which IDE you want to use.",
+
+    desktopIdeTitle: "Open in Desktop IDE",
+    desktopIdeSubtitle: "Choose whether you would like to open your workspace in a desktop IDE instead.",
+    desktopIdeLabel: "Beta",
+    desktopIdeInfobox: 'While in beta, when you open a workspace using a JetBrains IDE you will need to use the following password: <span class="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-md text-sm font-mono font-medium">gitpod</span>',
+    desktopIdeFootnote: '<p class="text-left w-full text-gray-500">The <strong>JetBrains desktop IDEs</strong> are currently in beta. <a href="https://github.com/gitpod-io/gitpod/issues/6576" target="gitpod-feedback-issue" rel="noopener" class="gp-link">Send feedback</a> · <a href="https://www.gitpod.io/docs/integrations/jetbrains" target="_blank" rel="noopener" class="gp-link">Documentation</a></p>',
+
+    defaultIde: "code",
+    defaultDesktopIde: "code-desktop",
+
+    options: {
+        // Browser IDEs
+        "code": {
+            title: "VS Code",
+            type: "browser",
+            logo: "vscode",
+        },
+        "code-latest": {
+            title: "VS Code",
+            type: "browser",
+            logo: "vscode-insiders",
+            tooltip: "Early access version, still subject to testing.",
+            label: "Insiders",
+        },
+        // Desktop IDEs
+        "code-desktop": {
+            title: "VS Code",
+            type: "desktop",
+            logo: "vscode",
+        },
+        "code-desktop-insiders": {
+            title: "VS Code",
+            type: "desktop",
+            logo: "vscode-insiders",
+            tooltip: "Early access version, still subject to testing.",
+            label: "Insiders",
+        },
+        "intellij": {
+            title: "IntelliJ IDEA",
+            type: "desktop",
+            logo: "intellij-idea",
+        },
+        "goland": {
+            title: "GoLand",
+            type: "desktop",
+            logo: "goland",
+        },
+    },
+};
+
 export default function Preferences() {
     const { user } = useContext(UserContext);
     const { setIsDark } = useContext(ThemeContext);
 
-    const [defaultIde, setDefaultIde] = useState<string>(user?.additionalData?.ideSettings?.defaultIde || 'code');
+    const [defaultIde, setDefaultIde] = useState<string>(user?.additionalData?.ideSettings?.defaultIde || idePreferences.defaultIde);
     const actuallySetDefaultIde = async (value: string) => {
         const additionalData = user?.additionalData || {};
         const settings = additionalData.ideSettings || {};
@@ -37,7 +110,7 @@ export default function Preferences() {
         setDefaultIde(value);
     }
 
-    const [defaultDesktopIde, setDefaultDesktopIde] = useState<string>(user?.additionalData?.ideSettings?.defaultDesktopIde || 'code-desktop');
+    const [defaultDesktopIde, setDefaultDesktopIde] = useState<string>(user?.additionalData?.ideSettings?.defaultDesktopIde || idePreferences.defaultDesktopIde);
     const actuallySetDefaultDesktopIde = async (value: string) => {
         const additionalData = user?.additionalData || {};
         const settings = additionalData.ideSettings || {};
@@ -73,58 +146,40 @@ export default function Preferences() {
 
     return <div>
         <PageWithSubMenu subMenu={settingsMenu} title='Preferences' subtitle='Configure user preferences.'>
-            <h3>Default IDE</h3>
-            <p className="text-base text-gray-500">Choose which IDE you want to use.</p>
+            <h3>{idePreferences.sectionTitle}</h3>
+            <p className="text-base text-gray-500">{idePreferences.sectionSubtitle}</p>
             <div className="mt-4 space-x-4 flex">
-                <SelectableCard className="w-36 h-40" title="VS Code" selected={defaultIde === 'code'} onClick={() => actuallySetDefaultIde('code')}>
-                    <div className="flex justify-center mt-3">
-                        <img className="w-16 filter-grayscale self-center" src={vscode} />
-                    </div>
-                </SelectableCard>
-                <Tooltip content={'Early access version, still subject to testing.'} >
-                    <SelectableCard className="w-36 h-40" title="VS Code" selected={defaultIde === 'code-latest'} onClick={() => actuallySetDefaultIde('code-latest')}>
-                        <div className="flex justify-center mt-3">
-                            <img className="w-16 filter-grayscale self-center" src={vscodeInsiders} />
-                        </div>
-                        <PillLabel type="warn" className="font-semibold mt-2 py-0.5 px-2 self-center">Insiders</PillLabel>
-                    </SelectableCard>
-                </Tooltip>
+                {
+                    Object.entries(idePreferences.options).filter(([_, x]) => x.type === "browser").map(([id, option]) => {
+                        const selected = defaultIde === id;
+                        const onSelect = () => actuallySetDefaultIde(id);
+                        return renderIdeOption(option, selected, onSelect);
+                    })
+                }
             </div>
             <div className="mt-4 space-x-4 flex">
                 <CheckBox
-                    title={<div>Open in Desktop IDE <PillLabel type="warn" className="font-semibold mt-2 py-0.5 px-2 self-center">Beta</PillLabel></div>}
-                    desc="Choose whether you would like to open your workspace in a desktop IDE instead."
+                    title={<div>
+                        {idePreferences.desktopIdeTitle}
+                        {idePreferences.desktopIdeLabel ? <PillLabel type="warn" className="font-semibold mt-2 py-0.5 px-2 self-center">{idePreferences.desktopIdeLabel}</PillLabel> : <></>}
+                    </div>}
+                    desc={idePreferences.desktopIdeSubtitle}
                     checked={useDesktopIde}
                     onChange={(evt) => actuallySetUseDesktopIde(evt.target.checked)} />
             </div>
             {useDesktopIde && <>
                 <div className="mt-4 space-x-4 flex">
-                    <SelectableCard className="w-36 h-40" title="VS Code" selected={defaultDesktopIde === 'code-desktop'} onClick={() => actuallySetDefaultDesktopIde('code-desktop')}>
-                        <div className="flex justify-center mt-3">
-                            <img className="w-16 filter-grayscale self-center" src={vscode} />
-                        </div>
-                    </SelectableCard>
-                    <SelectableCard className="w-36 h-40" title="VS Code" selected={defaultDesktopIde === 'code-desktop-insiders'} onClick={() => actuallySetDefaultDesktopIde('code-desktop-insiders')}>
-                        <div className="flex justify-center mt-3">
-                            <img className="w-16 filter-grayscale self-center" src={vscodeInsiders} />
-                        </div>
-                        <PillLabel type="warn" className="font-semibold mt-2 py-0.5 px-2 self-center">Insiders</PillLabel>
-                    </SelectableCard>
-                    <SelectableCard className="w-36 h-40" title="IntelliJ IDEA" selected={defaultDesktopIde === 'intellij'} onClick={() => actuallySetDefaultDesktopIde('intellij')}>
-                        <div className="flex justify-center mt-3">
-                            <img className="w-16 filter-grayscale self-center" src={ideaLogo} />
-                        </div>
-                    </SelectableCard>
-                    <SelectableCard className="w-36 h-40" title="GoLand" selected={defaultDesktopIde === 'goland'} onClick={() => actuallySetDefaultDesktopIde('goland')}>
-                        <div className="flex justify-center mt-3">
-                            <img className="w-16 filter-grayscale self-center" src={golandLogo} />
-                        </div>
-                    </SelectableCard>
+                    {
+                        Object.entries(idePreferences.options).filter(([_, x]) => x.type === "desktop").map(([id, option]) => {
+                            const selected = defaultDesktopIde === id;
+                            const onSelect = () => actuallySetDefaultDesktopIde(id);
+                            return renderIdeOption(option, selected, onSelect);
+                        })
+                    }
                 </div>
-                <InfoBox className="my-5 max-w-2xl">While in beta, when you open a workspace using a JetBrains IDE you will need to use the following password: <CodeText>gitpod</CodeText></InfoBox>
-                <p className="text-left w-full text-gray-500">
-                    The <strong>JetBrains desktop IDEs</strong> are currently in beta. <a href="https://github.com/gitpod-io/gitpod/issues/6576" target="gitpod-feedback-issue" rel="noopener" className="gp-link">Send feedback</a> · <a href="https://www.gitpod.io/docs/integrations/jetbrains" target="_blank" rel="noopener" className="gp-link">Documentation</a>
-                </p>
+
+                {idePreferences.desktopIdeInfobox ? <InfoBox className="my-5 max-w-2xl"><div dangerouslySetInnerHTML={{ __html: idePreferences.desktopIdeInfobox }}></div></InfoBox> : <></>}
+                {idePreferences.desktopIdeFootnote ? <div dangerouslySetInnerHTML={{ __html: idePreferences.desktopIdeFootnote }}></div> : <></>}
             </>}
             <h3 className="mt-12">Theme</h3>
             <p className="text-base text-gray-500">Early bird or night owl? Choose your side.</p>
@@ -147,4 +202,21 @@ export default function Preferences() {
             </div>
         </PageWithSubMenu>
     </div>;
+}
+
+function renderIdeOption(option: IdeOption, selected: boolean, onSelect: () => void): JSX.Element {
+    const card = <SelectableCard className="w-36 h-40" title={option.title} selected={selected} onClick={onSelect}>
+        <div className="flex justify-center mt-3">
+            <img className="w-16 filter-grayscale self-center"
+                src={option.logo.startsWith("http") ? option.logo : ideLogos[option.logo]} />
+        </div>
+        {option.label ? <PillLabel type="warn" className="font-semibold mt-2 py-0.5 px-2 self-center">{option.label}</PillLabel> : <></>}
+    </SelectableCard>;
+
+    if (option.tooltip) {
+        return <Tooltip content={option.tooltip} >
+            {card}
+        </Tooltip>;
+    }
+    return card;
 }
