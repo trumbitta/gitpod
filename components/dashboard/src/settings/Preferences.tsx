@@ -51,7 +51,7 @@ const idePreferences: IdePreferences = {
     desktopIdeSubtitle: "Choose whether you would like to open your workspace in a desktop IDE instead.",
     desktopIdeLabel: "Beta",
     desktopIdeInfobox: 'While in beta, when you open a workspace using a JetBrains IDE you will need to use the following password: <span class="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded-md text-sm font-mono font-medium">gitpod</span>',
-    desktopIdeFootnote: '<p class="text-left w-full text-gray-500">The <strong>JetBrains desktop IDEs</strong> are currently in beta. <a href="https://github.com/gitpod-io/gitpod/issues/6576" target="gitpod-feedback-issue" rel="noopener" class="gp-link">Send feedback</a> · <a href="https://www.gitpod.io/docs/integrations/jetbrains" target="_blank" rel="noopener" class="gp-link">Documentation</a></p>',
+    desktopIdeFootnote: '<p class="text-left w-full text-gray-500 dark:text-gray-400">The <strong>JetBrains desktop IDEs</strong> are currently in beta. <a href="https://github.com/gitpod-io/gitpod/issues/6576" target="gitpod-feedback-issue" rel="noopener" class="gp-link">Send feedback</a> · <a href="https://www.gitpod.io/docs/integrations/jetbrains" target="_blank" rel="noopener" class="gp-link">Documentation</a></p>',
 
     defaultIde: "code",
     defaultDesktopIde: "code-desktop",
@@ -80,18 +80,22 @@ const idePreferences: IdePreferences = {
             title: "VS Code",
             type: "desktop",
             logo: "vscode-insiders",
-            tooltip: "Early access version, still subject to testing.",
+            tooltip: "Visual Studio Code Insiders for early adopters.",
             label: "Insiders",
         },
         "intellij": {
             title: "IntelliJ IDEA",
             type: "desktop",
             logo: "intellij-idea",
+            tooltip: "IntelliJ IDEA from the Early-Access-Programm (EAP)",
+            label: "EAP",
         },
         "goland": {
             title: "GoLand",
             type: "desktop",
             logo: "goland",
+            tooltip: "GoLand from the Early-Access-Programm (EAP)",
+            label: "EAP",
         },
     },
 };
@@ -147,7 +151,7 @@ export default function Preferences() {
     return <div>
         <PageWithSubMenu subMenu={settingsMenu} title='Preferences' subtitle='Configure user preferences.'>
             <h3>{idePreferences.sectionTitle}</h3>
-            <p className="text-base text-gray-500">{idePreferences.sectionSubtitle}</p>
+            <p className="text-base text-gray-500 dark:text-gray-400">{idePreferences.sectionSubtitle}</p>
             <div className="mt-4 space-x-4 flex">
                 {
                     Object.entries(idePreferences.options).filter(([_, x]) => x.type === "browser").map(([id, option]) => {
@@ -182,7 +186,7 @@ export default function Preferences() {
                 {idePreferences.desktopIdeFootnote ? <div dangerouslySetInnerHTML={{ __html: idePreferences.desktopIdeFootnote }}></div> : <></>}
             </>}
             <h3 className="mt-12">Theme</h3>
-            <p className="text-base text-gray-500">Early bird or night owl? Choose your side.</p>
+            <p className="text-base text-gray-500 dark:text-gray-400">Early bird or night owl? Choose your side.</p>
             <div className="mt-4 space-x-4 flex">
                 <SelectableCard className="w-36 h-32" title="Light" selected={theme === 'light'} onClick={() => actuallySetTheme('light')}>
                     <div className="flex-grow flex justify-center items-end">
@@ -210,7 +214,7 @@ function renderIdeOption(option: IdeOption, selected: boolean, onSelect: () => v
             <img className="w-16 filter-grayscale self-center"
                 src={option.logo.startsWith("http") ? option.logo : ideLogos[option.logo]} />
         </div>
-        {option.label ? <PillLabel type="warn" className="font-semibold mt-2 py-0.5 px-2 self-center">{option.label}</PillLabel> : <></>}
+        {option.label ? <div className={`font-semibold text-sm ${selected ? 'text-green-500' : 'text-gray-500 dark:text-gray-400'} uppercase mt-2 ml-2 px-3 py-1 self-center`}>{option.label}</div> : <></>}
     </SelectableCard>;
 
     if (option.tooltip) {
