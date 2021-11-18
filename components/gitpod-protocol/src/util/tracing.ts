@@ -58,9 +58,18 @@ export class TracingManager {
             },
             serviceName
         }
+        let version = process.env.VERSION;
+        if (!version) {
+            version = 'mads-is-testing'
+        }
         const t = initTracerFromEnv(config, {
-            logger: console
+            logger: console,
+            tags: {
+                version: version,
+                'service.version': version
+            }
         });
+
         if (opts) {
             if (opts.perOpSampling) {
                 (t as any)._sampler = new PerOperationSampler((t as any)._sampler, opts.perOpSampling);
