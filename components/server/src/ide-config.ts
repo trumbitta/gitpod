@@ -51,6 +51,7 @@ const scheme = {
                             "hidden": { "type": "boolean" },
                             "image": { "type": "string" },
                             "resolveImageDigest": { "type": "boolean" },
+                            "orderKey": { "type": "string" },
                         },
                         "required": [
                             "title",

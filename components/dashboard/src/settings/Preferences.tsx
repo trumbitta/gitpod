@@ -90,14 +90,14 @@ export default function Preferences() {
                 <p className="text-base text-gray-500 dark:text-gray-400">{idePreferences.sectionSubtitle}</p>
                 <div className="mt-4 space-x-4 flex">
                     {
-                        Object.entries(idePreferences.options).filter(([_, x]) => x.type === "browser" && !x.hidden).map(([id, option]) => {
+                        orderedIdeOptions(idePreferences, "browser").map(([id, option]) => {
                             const selected = defaultIde === id;
                             const onSelect = () => actuallySetDefaultIde(id);
                             return renderIdeOption(option, selected, onSelect);
                         })
                     }
                 </div>
-                {Object.entries(idePreferences.options).filter(([_, x]) => x.type === "desktop" && !x.hidden).length > 0 && <>
+                {orderedIdeOptions(idePreferences, "desktop").length > 0 && <>
                     <div className="mt-4 space-x-4 flex">
                         <CheckBox
                             title={<div>
@@ -111,7 +111,7 @@ export default function Preferences() {
                     {useDesktopIde && <>
                         <div className="mt-4 space-x-4 flex">
                             {
-                                Object.entries(idePreferences.options).filter(([_, x]) => x.type === "desktop" && !x.hidden).map(([id, option]) => {
+                                orderedIdeOptions(idePreferences, "desktop").map(([id, option]) => {
                                     const selected = defaultDesktopIde === id;
                                     const onSelect = () => actuallySetDefaultDesktopIde(id);
                                     return renderIdeOption(option, selected, onSelect);
@@ -163,4 +163,14 @@ function renderIdeOption(option: IdeOption, selected: boolean, onSelect: () => v
         </Tooltip>;
     }
     return card;
+}
+
+function orderedIdeOptions(idePreferences: IdePreferences, type: "browser" | "desktop") {
+    return Object.entries(idePreferences.options)
+        .filter(([_, x]) => x.type === type && !x.hidden)
+        .sort((a, b) => {
+            const keyA = a[1].orderKey || a[0];
+            const keyB = b[1].orderKey || b[0];
+            return keyA.localeCompare(keyB);
+        });
 }

@@ -62,11 +62,13 @@ options:
     hidden: true
     image: {{ (include "stable-image-full" (dict "root" $ "gp" $gp "comp" $gp.components.workspace.codeImage)) }}
   code:
+    orderKey: "0"
     title: "VS Code"
     type: "browser"
     logo: "vscode"
     image: {{ (include "stable-image-full" (dict "root" $ "gp" $gp "comp" $gp.components.workspace.codeImage)) }}
   code-latest:
+    orderKey: "1"
     title: "VS Code"
     type: "browser"
     logo: "vscode-insiders"
@@ -77,11 +79,13 @@ options:
 
   # Desktop IDEs
   code-desktop:
+    orderKey: "0"
     title: "VS Code"
     type: "desktop"
     logo: "vscode"
     image: {{ (include "gitpod.comp.imageFull" (dict "root" $ "gp" $gp "comp" $gp.components.workspace.desktopIdeImages.codeDesktop)) }}
   code-desktop-insiders:
+    orderKey: "1"
     title: "VS Code"
     type: "desktop"
     logo: "vscode-insiders"
@@ -89,6 +93,7 @@ options:
     label: "Insiders"
     image: {{ (include "gitpod.comp.imageFull" (dict "root" $ "gp" $gp "comp" $gp.components.workspace.desktopIdeImages.codeDesktopInsiders)) }}
   intellij:
+    orderKey: "2"
     title: "IntelliJ IDEA"
     type: "desktop"
     logo: "intellij-idea"
@@ -96,6 +101,7 @@ options:
     label: "EAP"
     image: {{ (include "gitpod.comp.imageFull" (dict "root" $ "gp" $gp "comp" $gp.components.workspace.desktopIdeImages.intellij)) }}
   goland:
+    orderKey: "3"
     title: "GoLand"
     type: "desktop"
     logo: "goland"

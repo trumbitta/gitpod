@@ -105,4 +105,8 @@ export interface IdeOption {
      * we resolve the tag regularly to the most recent image version.
      */
     resolveImageDigest?: boolean;
+    /**
+     * Specify the order by setting an order key.
+     */
+    orderKey?: string;
 }
