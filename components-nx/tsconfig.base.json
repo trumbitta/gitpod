@@ -15,9 +15,6 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@components-nx/dashboard/features/shared/analytics": [
-        "libs/dashboard/features/shared/analytics/src/index.ts"
-      ],
       "@components-nx/dashboard/features/teams": [
         "libs/dashboard/features/teams/src/index.ts"
       ],

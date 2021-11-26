@@ -6,9 +6,7 @@
 
 export * from './lib/protocol';
 export * from './lib/gitpod-service';
-export * from './lib/util/disposable';
-export * from './lib/util/event';
-export * from './lib/util/queue';
+export * from './lib/util';
 export * from './lib/license-protocol';
 export * from './lib/workspace-instance';
 export * from './lib/permission';

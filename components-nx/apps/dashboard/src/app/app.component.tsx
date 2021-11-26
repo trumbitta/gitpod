@@ -1,14 +1,152 @@
-import { Suspense, useContext, useEffect, useState } from 'react';
-import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
+/**
+ * Copyright (c) 2021 Gitpod GmbH. All rights reserved.
+ * Licensed under the GNU Affero General Public License (AGPL).
+ * See License-AGPL.txt in the project root for license information.
+ */
 
-import { TeamsContext } from '@components-nx/dashboard/features/teams';
-import { getGitpodService } from '@components-nx/dashboard/shared/service';
-import { trackButtonOrAnchor, trackLocation, trackPathChange } from '@components-nx/dashboard/features/shared/analytics';
-import { User, Project, ErrorCodes } from '@gitpod/gitpod-protocol';
+import React, { Suspense, useContext, useEffect, useState } from 'react';
+import Menu from './Menu';
+import { Redirect, Route, Switch } from 'react-router';
 
-// Context
-import { ThemeContext } from '../theme.context';
-import { UserContext } from '../user.context';
+import { Login } from './Login';
+import { UserContext } from './user-context';
+import { TeamsContext } from './teams/teams-context';
+import { ThemeContext } from './theme-context';
+import { getGitpodService } from './service/service';
+import { shouldSeeWhatsNew, WhatsNew } from './whatsnew/WhatsNew';
+import gitpodIcon from './icons/gitpod.svg';
+import { ErrorCodes } from '@gitpod/gitpod-protocol';
+import { useHistory } from 'react-router-dom';
+import {
+  trackButtonOrAnchor,
+  trackPathChange,
+  trackLocation,
+} from './Analytics';
+import { User } from '@gitpod/gitpod-protocol';
+import * as GitpodCookie from '@gitpod/gitpod-protocol/lib/util/gitpod-cookie';
+
+const Setup = React.lazy(() => import(/* webpackPrefetch: true */ './Setup'));
+const Workspaces = React.lazy(
+  () => import(/* webpackPrefetch: true */ './workspaces/Workspaces')
+);
+const Account = React.lazy(
+  () => import(/* webpackPrefetch: true */ './settings/Account')
+);
+const Notifications = React.lazy(
+  () => import(/* webpackPrefetch: true */ './settings/Notifications')
+);
+const Plans = React.lazy(
+  () => import(/* webpackPrefetch: true */ './settings/Plans')
+);
+const Teams = React.lazy(
+  () => import(/* webpackPrefetch: true */ './settings/Teams')
+);
+const EnvironmentVariables = React.lazy(
+  () => import(/* webpackPrefetch: true */ './settings/EnvironmentVariables')
+);
+const Integrations = React.lazy(
+  () => import(/* webpackPrefetch: true */ './settings/Integrations')
+);
+const Preferences = React.lazy(
+  () => import(/* webpackPrefetch: true */ './settings/Preferences')
+);
+const StartWorkspace = React.lazy(
+  () => import(/* webpackPrefetch: true */ './start/StartWorkspace')
+);
+const CreateWorkspace = React.lazy(
+  () => import(/* webpackPrefetch: true */ './start/CreateWorkspace')
+);
+const NewTeam = React.lazy(
+  () => import(/* webpackPrefetch: true */ './teams/NewTeam')
+);
+const JoinTeam = React.lazy(
+  () => import(/* webpackPrefetch: true */ './teams/JoinTeam')
+);
+const Members = React.lazy(
+  () => import(/* webpackPrefetch: true */ './teams/Members')
+);
+const TeamSettings = React.lazy(
+  () => import(/* webpackPrefetch: true */ './teams/TeamSettings')
+);
+const NewProject = React.lazy(
+  () => import(/* webpackPrefetch: true */ './projects/NewProject')
+);
+const ConfigureProject = React.lazy(
+  () => import(/* webpackPrefetch: true */ './projects/ConfigureProject')
+);
+const Projects = React.lazy(
+  () => import(/* webpackPrefetch: true */ './projects/Projects')
+);
+const Project = React.lazy(
+  () => import(/* webpackPrefetch: true */ './projects/Project')
+);
+const Prebuilds = React.lazy(
+  () => import(/* webpackPrefetch: true */ './projects/Prebuilds')
+);
+const Prebuild = React.lazy(
+  () => import(/* webpackPrefetch: true */ './projects/Prebuild')
+);
+const InstallGitHubApp = React.lazy(
+  () => import(/* webpackPrefetch: true */ './prebuilds/InstallGitHubApp')
+);
+const FromReferrer = React.lazy(
+  () => import(/* webpackPrefetch: true */ './FromReferrer')
+);
+const UserSearch = React.lazy(
+  () => import(/* webpackPrefetch: true */ './admin/UserSearch')
+);
+const WorkspacesSearch = React.lazy(
+  () => import(/* webpackPrefetch: true */ './admin/WorkspacesSearch')
+);
+const OAuthClientApproval = React.lazy(
+  () => import(/* webpackPrefetch: true */ './OauthClientApproval')
+);
+
+function Loading() {
+  return null;
+}
+
+function isGitpodIo() {
+  return (
+    window.location.hostname === 'gitpod.io' ||
+    window.location.hostname === 'gitpod-staging.com' ||
+    window.location.hostname.endsWith('gitpod-dev.com') ||
+    window.location.hostname.endsWith('gitpod-io-dev.com')
+  );
+}
+
+function isWebsiteSlug(pathName: string) {
+  const slugs = [
+    'about',
+    'blog',
+    'careers',
+    'changelog',
+    'chat',
+    'code-of-conduct',
+    'contact',
+    'docs',
+    'features',
+    'for',
+    'gitpod-vs-github-codespaces',
+    'imprint',
+    'media-kit',
+    'pricing',
+    'privacy',
+    'security',
+    'screencasts',
+    'self-hosted',
+    'support',
+    'terms',
+    'values',
+  ];
+  return slugs.some(
+    (slug) => pathName.startsWith('/' + slug + '/') || pathName === '/' + slug
+  );
+}
+
+function getURLHash() {
+  return window.location.hash.replace(/^[#/]+/, '');
+}
 
 export const App = () => {
   const { user, setUser } = useContext(UserContext);
@@ -59,10 +197,9 @@ export const App = () => {
         trackLocation(!!user);
       }
       setLoading(false);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any)._gp.path = window.location.pathname; //store current path to have access to previous when path changes
     })();
-  }, [history, setTeams, setUser]);
+  }, []);
 
   useEffect(() => {
     const updateTheme = () => {
@@ -90,7 +227,7 @@ export const App = () => {
       }
       window.removeEventListener('storage', updateTheme);
     };
-  }, [setIsDark]);
+  }, []);
 
   // listen and notify Segment of client-side path updates
   useEffect(() => {
@@ -123,7 +260,7 @@ export const App = () => {
     window.addEventListener('click', handleButtonOrAnchorTracking);
     return () =>
       window.removeEventListener('click', handleButtonOrAnchorTracking, true);
-  }, [user]);
+  }, []);
 
   // redirect to website for any website slugs
   if (isGitpodIo() && isWebsiteSlug(window.location.pathname)) {
@@ -347,10 +484,10 @@ export const App = () => {
     );
     return <div></div>;
   } else if (
-    /^([^\/]+?=[^\/]*?|prebuild)\/(https:\/\/)?github\.dev\//i.test(hash)
+    /^([^/]+?=[^/]*?|prebuild)\/(https:\/\/)?github\.dev\//i.test(hash)
   ) {
     window.location.hash = hash.replace(
-      /^([^\/]+?=[^\/]*?|prebuild)\/(https:\/\/)?github\.dev\//i,
+      /^([^/]+?=[^/]*?|prebuild)\/(https:\/\/)?github\.dev\//i,
       '$1/https://github.com/'
     );
     return <div></div>;
@@ -364,7 +501,7 @@ export const App = () => {
   } else if (isWsStart) {
     toRender = <StartWorkspace workspaceId={hash} />;
   } else if (/^(github|gitlab)\.com\/.+?/i.test(window.location.pathname)) {
-    let url = new URL(window.location.href);
+    const url = new URL(window.location.href);
     url.hash = url.pathname;
     url.pathname = '/';
     window.location.replace(url);
@@ -374,44 +511,4 @@ export const App = () => {
   return <Suspense fallback={<Loading />}>{toRender}</Suspense>;
 };
 
-function isGitpodIo() {
-  return (
-    window.location.hostname === 'gitpod.io' ||
-    window.location.hostname === 'gitpod-staging.com' ||
-    window.location.hostname.endsWith('gitpod-dev.com') ||
-    window.location.hostname.endsWith('gitpod-io-dev.com')
-  );
-}
-
-function isWebsiteSlug(pathName: string) {
-  const slugs = [
-    'about',
-    'blog',
-    'careers',
-    'changelog',
-    'chat',
-    'code-of-conduct',
-    'contact',
-    'docs',
-    'features',
-    'for',
-    'gitpod-vs-github-codespaces',
-    'imprint',
-    'media-kit',
-    'pricing',
-    'privacy',
-    'security',
-    'screencasts',
-    'self-hosted',
-    'support',
-    'terms',
-    'values',
-  ];
-  return slugs.some(
-    (slug) => pathName.startsWith('/' + slug + '/') || pathName === '/' + slug
-  );
-}
-
-function getURLHash() {
-  return window.location.hash.replace(/^[#/]+/, '');
-}
+export default App;

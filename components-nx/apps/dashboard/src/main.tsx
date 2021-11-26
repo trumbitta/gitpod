@@ -15,8 +15,8 @@ import { TeamsContextProvider } from '@components-nx/dashboard/features/teams';
 import { App } from './app/app.component';
 
 // Context
-import { UserContextProvider } from './user.context';
-import { ThemeContextProvider } from './theme.context';
+import { UserContextProvider } from './app/user-context';
+import { ThemeContextProvider } from './app/theme-context';
 
 // import './index.css';
 
