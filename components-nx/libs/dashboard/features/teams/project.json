@@ -1,0 +1,25 @@
+{
+  "root": "libs/dashboard/features/teams",
+  "sourceRoot": "libs/dashboard/features/teams/src",
+  "projectType": "library",
+  "tags": ["scope:dashboard", "type:feature"],
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": [
+          "libs/dashboard/features/teams/**/*.{ts,tsx,js,jsx}"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/dashboard/features/teams"],
+      "options": {
+        "jestConfig": "libs/dashboard/features/teams/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2017", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@components-nx/dashboard/features/shared/analytics": [
+        "libs/dashboard/features/shared/analytics/src/index.ts"
+      ],
+      "@components-nx/dashboard/features/teams": [
+        "libs/dashboard/features/teams/src/index.ts"
+      ],
+      "@components-nx/dashboard/shared/service": [
+        "libs/dashboard/shared/service/src/index.ts"
+      ],
+      "@gitpod/gitpod-protocol": ["libs/gitpod-protocol/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

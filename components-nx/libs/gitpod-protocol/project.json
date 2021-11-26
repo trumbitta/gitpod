@@ -1,0 +1,34 @@
+{
+  "root": "libs/gitpod-protocol",
+  "sourceRoot": "libs/gitpod-protocol/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/gitpod-protocol/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/libs/gitpod-protocol"],
+      "options": {
+        "jestConfig": "libs/gitpod-protocol/jest.config.js",
+        "passWithNoTests": true
+      }
+    },
+    "build": {
+      "executor": "@nrwl/node:package",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/gitpod-protocol",
+        "tsConfig": "libs/gitpod-protocol/tsconfig.lib.json",
+        "packageJson": "libs/gitpod-protocol/package.json",
+        "main": "libs/gitpod-protocol/src/index.ts",
+        "assets": ["libs/gitpod-protocol/*.md", "libs/gitpod-protocol/assets"]
+      }
+    }
+  },
+  "tags": ["scope:shared", "type:util"]
+}
